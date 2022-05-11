@@ -13,3 +13,7 @@ export const createOrder = async (auth) => {
         cityId: 1,
     })
 }
+
+export const updateOrder = async (auth) => {
+
+}
