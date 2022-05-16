@@ -3,6 +3,7 @@ import { database } from "./database.js";
 import userController from "./user/user.controller.js";
 import orderController from "./order/order.controller.js";
 import authController from "./auth/auth.controller.js";
+import itemController from "./item/item.controller.js";
 import { authMiddleware } from "./middleware/auth.js";
 
 const PORT = 4000
@@ -13,6 +14,8 @@ app.use("/users", userController)
 app.use('/orders', authMiddleware)
 app.use("/orders", orderController)
 app.use("/auth", authController)
+app.use("/items", authMiddleware)
+app.use("/items", itemController)
 
 try {
     await database.sequelize.authenticate();

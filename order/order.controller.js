@@ -11,8 +11,11 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     const auth = req.auth
-    const order = await createOrder(auth)
+    const payload = req.body
+    const order = await createOrder(auth, payload)
     res.json(order)
 })
+
+router.post
 
 export default router

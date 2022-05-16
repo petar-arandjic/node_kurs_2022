@@ -12,6 +12,10 @@ import {
     verifyToken
 } from "../token/token.service.js";
 
+export const findByIdUser = async (id) => {
+    return database.User.findByPk(id)
+}
+
 // Find user by email
 export const findByEmailUser = async (email) => {
     return database.User.findOne({
