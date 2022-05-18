@@ -93,6 +93,8 @@ User.belongsToMany(Profile, { through: UserProfile })
 Profile.belongsToMany(User, { through: UserProfile })
 Item.hasMany(Order)
 Order.belongsTo(Item)
+User.hasMany(Item)
+Item.belongsTo(User)
 
 export const database = {
     sequelize,

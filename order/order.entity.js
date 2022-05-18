@@ -19,6 +19,18 @@ export const newOrderEntity = (sequelize) => {
             postcode: {
                 type: DataTypes.STRING
             },
+            status: {
+              type: DataTypes.STRING
+            },
+            ownerId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: 'users',
+                    key: 'id',
+                },
+                onUpdate: "Cascade",
+                onDelete: "Cascade",
+            },
             itemId: {
                 type: DataTypes.INTEGER,
                 references: {

@@ -1,5 +1,5 @@
 import express from "express";
-import { createOrder, findManyOrders } from "./order.service.js";
+import {createOrder, findManyOrders, updateOrderStatus} from "./order.service.js";
 
 const router = express.Router();
 
@@ -14,6 +14,14 @@ router.post('/', async (req, res) => {
     const payload = req.body
     const order = await createOrder(auth, payload)
     res.json(order)
+})
+
+router.patch('/:id/status',  async (req, res) => {
+    const orderId = req.params.id
+    const payload = req.body
+    const response = await updateOrderStatus(orderId, payload)
+    console.log(response)
+    res.json(response)
 })
 
 router.post

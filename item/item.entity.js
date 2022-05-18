@@ -14,7 +14,14 @@ export const newItemEntity = (sequelize) => {
                 type: DataTypes.DECIMAL,
             },
             quantity: {
-                type: DataTypes.STRING,
+                type: DataTypes.INTEGER,
+            },
+            userId: {
+                type: DataTypes.INTEGER,
+            },
+            reserved: {
+                type: DataTypes.INTEGER,
+                defaultValue: 0,
             },
         },
         {

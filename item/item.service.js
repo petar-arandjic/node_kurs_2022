@@ -1,5 +1,5 @@
 import { database } from "../database.js";
-import { handleJoiValidationErrors, UnauthorizedRequest } from "../errors.js";
+import {handleJoiValidationErrors, InternalServerError, UnauthorizedRequest} from "../errors.js";
 import { createItemValidator } from "./validation/create-item.validation.js";
 import { findByIdUser } from "../user/user.service.js";
 
@@ -17,14 +17,38 @@ export const createItem = async (auth, payload) => {
     if (validated.error) {
         return handleJoiValidationErrors(validated.error)
     }
-
     const user = await findByIdUser(auth.id)
     if (!user) {
         return new UnauthorizedRequest()
     }
 
-    return  await database.Item.create({
+    const createItem = {
         ...payload,
         userId: auth.id
-    })
+    }
+
+    return database.Item.create(createItem);
+}
+
+export const updateQuantity = async (itemId, addedItems) => {
+    const item = await database.Item.findByPk(itemId)
+    console.log(item)
+    if (!item) {
+        return InternalServerError
+    }
+    console.log(item)
+    item.quantity = item.quantity + addedItems
+    await item.save()
+    return item.reload()
+}
+
+export const updateReservedItem = async (itemId, addedReserved) => {
+    const item = await database.Item.findByPk(itemId)
+    if (!item) {
+        return InternalServerError
+    }
+
+    item.reserved = item.reserved + addedReserved
+    await item.save()
+    return item.reload()
 }
