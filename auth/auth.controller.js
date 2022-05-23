@@ -1,5 +1,5 @@
 import express from "express";
-import { login } from "./auth.service.js";
+import {login, refreshAuthentication} from "./auth.service.js";
 import { createUser } from "../user/user.service.js";
 
 const router = express.Router();
@@ -20,6 +20,12 @@ router.post('/registration', async (req, res) => {
     } catch (e) {
 
     }
+})
+
+router.post('/refreshToken', async (req, res) => {
+    const { refresh } = req.body
+    const response = await refreshAuthentication(refresh)
+    res.json(response)
 })
 
 export default router

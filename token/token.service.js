@@ -35,6 +35,15 @@ export const verifyToken = async (userId, tokenValue, type) => {
     return true
 }
 
+export const findOneToken = async (where, include) => {
+    // TODO add validation
+    // TODO validate possibility want can be inside include
+    return database.Token.findOne({
+        where,
+        include,
+    })
+}
+
 // find one token by user id and type
 export const findOneByUserIdAndTypeToken = async (userId, type) => {
     return await database.Token.findOne({
@@ -52,5 +61,11 @@ export const deleteByUserIdAndTypeToken = async (userId, type) => {
             userId,
             type,
         }
+    })
+}
+
+export const utilizeToken = async (tokenId) => {
+    return  await database.Token.destroy({
+        where: { id: tokenId }
     })
 }

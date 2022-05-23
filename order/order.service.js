@@ -49,7 +49,7 @@ export const createOrder = async (auth, payload) => {
     return order
 }
 
-export const updateOrderStatus = async (orderId, payload) => {
+export const updateOrderStatus = async (orderId, payload, auth) => {
     // validate data
     const validated = updateOrderStatusValidator.validate(payload, { abortEarly: false })
     if (validated.error) {
@@ -60,7 +60,43 @@ export const updateOrderStatus = async (orderId, payload) => {
     if (!orderId) {
         return NotFound('order')
     }
-    order.status = payload.status
-    await order.save()
-    return order
+
+    if (order.ownerId === auth.id) {
+        return ownerUpdateOrderStatus(auth.id, order.id, payload.status)
+    } else if (order.userId === auth.id) {
+        return buyerUpdateOrderStatus(auth.id, order.id, payload.status)
+    }
+}
+
+export const ownerUpdateOrderStatus = async (ownerId, orderId, status) => {
+    const order = await database.Order.findByPk(orderId)
+    if (!orderId) {
+        return NotFound('order')
+    }
+
+    if (order.ownerId !== ownerId || order.status !== "CREATED" || status !== "IN_DELIVERY") {
+        return BadRequest()
+    }
+
+    order.status = status
+
+    return order.save()
+}
+
+export const buyerUpdateOrderStatus = async (buyerId, orderId, status) => {
+    if (status !== "DELIVERED") {
+        return BadRequest()
+    }
+    const isUpdated = await database.Order.update(
+        { status },
+        {
+            where: {
+                id: orderId,
+                userId: buyerId,
+                status: "IN_DELIVERY",
+            },
+        },
+    )
+
+    return { isUpdated: !!isUpdated[0] }
 }
