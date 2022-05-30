@@ -1,8 +1,9 @@
 import { database } from "../database.js";
 import { findByIdUser } from "../user/user.service.js";
-import {findByIdItem, updateReservedItem} from "../item/item.service.js";
+import { findByIdItem, updateReservedItem } from "../item/item.service.js";
 import { BadRequest, handleJoiValidationErrors, NotFound } from "../errors.js";
 import { updateOrderStatusValidator } from "./validation/update-order-status.validation.js";
+import { createOrderHistory } from "../order_history/order_history.service.js";
 
 export const findManyOrders = async (auth) => {
     return database.Order.findAndCountAll({
@@ -57,7 +58,7 @@ export const updateOrderStatus = async (orderId, payload, auth) => {
     }
 
     const order = await database.Order.findByPk(orderId)
-    if (!orderId) {
+    if (!order) {
         return NotFound('order')
     }
 
@@ -75,7 +76,7 @@ export const ownerUpdateOrderStatus = async (ownerId, orderId, status) => {
     }
 
     if (order.ownerId !== ownerId || order.status !== "CREATED" || status !== "IN_DELIVERY") {
-        return BadRequest()
+        return BadRequest("order owner can only update status IN_DELIVERY")
     }
 
     order.status = status
@@ -87,16 +88,53 @@ export const buyerUpdateOrderStatus = async (buyerId, orderId, status) => {
     if (status !== "DELIVERED") {
         return BadRequest()
     }
-    const isUpdated = await database.Order.update(
-        { status },
-        {
-            where: {
-                id: orderId,
-                userId: buyerId,
-                status: "IN_DELIVERY",
-            },
-        },
-    )
 
-    return { isUpdated: !!isUpdated[0] }
+    const order = await database.Order.findOne({
+        where: {
+            id: orderId,
+            userId: buyerId,
+        },
+        include: [
+            {
+                model: database.User,
+                as: "owner"
+            },
+            {
+                model: database.User,
+                as: "buyer"
+            },
+            {
+                model: database.Item
+            }
+        ]
+    })
+
+    if (order.status !== 'IN_DELIVERY') {
+        return BadRequest("order not yet sent or already delivered")
+    }
+
+    order.status = status
+    order.save()
+
+    // add to order history
+    createOrderHistory({
+        price: order.price,
+        userId: order.userId,
+        userFirstName: order.buyer.firstName,
+        userLastName: order.buyer.lastName,
+        cityId: order.cityId,
+        ownerId: order.owner.id,
+        ownerFirstName: order.owner.firstName,
+        ownerLastName: order.owner.firstName,
+        address: order.address,
+        postcode: order.postcode,
+        status: order.status,
+        itemId: order.Item.id,
+        itemName: order.Item.name,
+        itemPrice: order.Item.price,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+    })
+
+    return { isUpdated: true }
 }

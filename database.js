@@ -3,6 +3,7 @@ import { newUserEntity } from "./user/user.entity.js";
 import { newOrderEntity } from "./order/order.entity.js";
 import { newTokenEntity } from "./token/token.entity.js";
 import { newItemEntity } from "./item/item.entity.js";
+import {newOrderHistoryEntity} from "./order_history/order_history.entity.js";
 
 const sequelize = new Sequelize('delivery', 'root', 'root', {
     host: 'localhost',
@@ -82,11 +83,23 @@ const UserProfile = sequelize.define(
 )
 
 const Item = newItemEntity(sequelize)
+const OrderHistory = newOrderHistoryEntity(sequelize)
 
 User.hasMany(Token)
 Token.belongsTo(User)
 User.hasMany(Order, { as: "orders" })
-Order.belongsTo(User)
+Order.belongsTo(User, {
+    foreignKey: "userId",
+    as: "buyer"
+})
+User.hasMany(Order, {
+    as: 'ownerOrders',
+    foreignKey: 'ownerId'
+})
+Order.belongsTo(User, {
+    foreignKey: 'ownerId',
+    as: 'owner'
+})
 Order.belongsTo(City, { as: "city" })
 City.hasMany(Order)
 User.belongsToMany(Profile, { through: UserProfile })
@@ -105,4 +118,5 @@ export const database = {
     Profile,
     Order,
     Item,
+    OrderHistory,
 }
